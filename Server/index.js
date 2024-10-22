@@ -3,9 +3,10 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mysql = require('mysql2');
 const cors = require('cors');
-
+const nodemailer = require('nodemailer');
 const app = express();
 const PORT = 3000;
+const router = express.Router();
 
 // Middleware
 app.use(bodyParser.json());
@@ -131,6 +132,44 @@ app.post('/api/payment', (req, res) => {
     res.status(200).json({ message: 'Payment recorded successfully' });
   });
 });
+
+
+router.post('/api/forgotpassword', async (req, res) => {
+  const { email } = req.body;
+
+  // Validate the email and ensure it exists in your user database
+
+  // Generate a password reset token
+  const resetToken = generateResetToken(); // Implement this function
+
+  // Set up Nodemailer to send the email
+  const transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+      user: 'mzinhle059@gmail.com', // Your email address
+      pass: 'Kuhlekonke21!'   // Your email password
+    },
+  });
+
+  const mailOptions = {
+    from: 'mzinhle059@gmail.com',
+    to: email,
+    subject: 'Password Reset',
+    text: `Click the link to reset your password: http://localhost:3000/resetpassword?token=${resetToken}`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    res.status(200).send({ message: 'Email sent' });
+  } catch (error) {
+    res.status(500).send({ message: 'Error sending email' });
+  }
+});
+
+function generateResetToken() {
+  // Implement token generation logic here (e.g., using JWT or random strings)
+}
+
 
 
 app.listen(PORT, () => {
